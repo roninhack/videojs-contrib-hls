@@ -264,14 +264,6 @@ export class MasterPlaylistController extends videojs.EventTarget {
     segmentLoaderOptions.loaderType = 'audio';
     this.audioSegmentLoader_ = new SegmentLoader(segmentLoaderOptions);
 
-    this.decrypter_.onmessage = (event) => {
-      if (event.data.source === 'main') {
-        this.mainSegmentLoader_.handleDecrypted_(event.data);
-      } else if (event.data.source === 'audio') {
-        this.audioSegmentLoader_.handleDecrypted_(event.data);
-      }
-    };
-
     this.setupSegmentLoaderListeners_();
 
     this.masterPlaylistLoader_.start();
@@ -417,11 +409,12 @@ export class MasterPlaylistController extends videojs.EventTarget {
    * @private
    */
   setupSegmentLoaderListeners_() {
-    this.mainSegmentLoader_.on('progress', () => {
+    this.mainSegmentLoader_.on('processingcomplete', () => {
       // figure out what stream the next segment should be downloaded from
       // with the updated bandwidth information
       this.masterPlaylistLoader_.media(this.selectPlaylist());
-
+    });
+    this.mainSegmentLoader_.on('progress', () => {
       this.trigger('progress');
     });
 
